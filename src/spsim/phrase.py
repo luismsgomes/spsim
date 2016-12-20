@@ -3,7 +3,7 @@ import munkres
 from spsim.spsim import SpSim
 
 
-class PhraseSpSim:
+class PhraseSpSim(SpSim):
     '''
     Measures the similarity between pairs of phrases using SpSim for comparing
     words.
@@ -26,9 +26,20 @@ class PhraseSpSim:
 
     Step 2 is computed using the Munkres algorithm (aka Hungarian). Note that
     the problem solved in step 2 is widely known as "the assignment problem".
+
+    >>> sim = PhraseSpSim()
+    >>> sim.learn([('photo', 'foto'), ('alpha', 'alfa'), ('pangea', 'pangeia')])
+    >>> sorted(sim.diffs.items())
+    [('\\ti', 'ea'), ('ph\\tf', '**')]
+
+    SpSim has learned that 'ph' may be replaced by 'f' and 'ea' by 'eia'.
+
+    >>> sim('phenomenal idea', 'ideia fenomenal')
+    1.0
+
     '''
     def __init__(self, examples=None):
-        self._sim = SpSim(examples=examples)
+        super().__init__(examples=examples)
         self._dist_cache = {}
 
     def __call__(self, a, b):
@@ -60,10 +71,10 @@ class PhraseSpSim:
         key = a + '\t' + b
         d = self._dist_cache.get(key, None)
         if d is None:
-            d = (1.0 - self._sim(a, b)) * max(len(a), len(b))
+            d = (1.0 - super().__call__(a, b)) * max(len(a), len(b))
             self._dist_cache[key] = d
         return d
 
     def learn(self, examples):
-        self._sim.learn(examples)
+        super().learn(examples)
         self._dist_cache.clear()
