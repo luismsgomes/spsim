@@ -77,4 +77,4 @@ class PhraseSpSim(SpSim):
 
     def learn(self, examples):
         super().learn(examples)
-        self._dist_cache.clear()
+        self._dist_cache = {}
