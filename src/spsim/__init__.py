@@ -2,7 +2,7 @@ from spsim.spsim import SpSim
 from spsim.phrase import PhraseSpSim
 
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 
 __all__ = ["SpSim", "PhraseSpSim"]

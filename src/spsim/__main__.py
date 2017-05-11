@@ -6,7 +6,7 @@ import docopt
 import openfile
 import logging
 import sys
-from spsim2 import PhraseSpSim
+from spsim import PhraseSpSim
 
 
 logger = logging.getLogger("spsim")
