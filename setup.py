@@ -46,6 +46,8 @@ setup(
         'pytest-cov',
     ],
     install_requires=[
+        'docopt',
+        'openfile',
         'munkres',
         'stringology',
     ],

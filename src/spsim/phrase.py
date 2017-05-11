@@ -64,9 +64,9 @@ class PhraseSpSim(SpSim):
 
     def _dist(self, a, b):
         # first check if this is a obvious case (those aren't cached)
-        if a == b: return 0
-        if '' == a: return len(b)
-        if '' == b: return len(a)
+        if a == b: return 0  # pragma: no cover
+        if '' == a: return len(b)  # pragma: no cover
+        if '' == b: return len(a)  # pragma: no cover
 
         key = a + '\t' + b
         d = self._dist_cache.get(key, None)

@@ -1,24 +1,38 @@
+"""
+Usage: spsim <examples-file> [<input-file> [<output-file>]]
+"""
+
+import docopt
+import openfile
+import logging
 import sys
-from spsim import PhraseSpSim
+from spsim2 import PhraseSpSim
+
+
+logger = logging.getLogger("spsim")
+
 
 def main(argv=sys.argv):
-    if len(argv) != 3:
-        print('Usage: spsim <examplesfile> <inputfile>', file=sys.stderr)
-        sys.exit(2)
-    exfile, infile = argv[1:]
+    logging.basicConfig()
+    opts = docopt.docopt(__doc__)
     sim = PhraseSpSim()
-    with (open(exfile)) as lines:
+    with (openfile.openfile(opts["<examples-file>"])) as lines:
         sim.learn(
-            line.rstrip("\n").split("\t") for line in lines if "\t" in line
+            line.rstrip("\n").split("\t")[:2] for line in lines if "\t" in line
         )
-    with (sys.stdin if infile == '-' else open(infile)) as lines:
-        for n, line in enumerate(lines, start=1):
-            cols = line.strip().split('\t')
+    inputfile = openfile.openfile(opts["<input-file>"])
+    outputfile = openfile.openfile(opts["<output-file>"], "wt")
+    with inputfile, outputfile:
+        for num, line in enumerate(inputfile, start=1):
+            cols = line.rstrip('\n').split('\t')
             if 2 > len(cols):
-                msg = 'Error: Line {:d} of {} has less than 2 columns.'
-                sys.exit(msg.format(n, infile))
+                logger.warning(
+                    'line %d of %s has less than 2 columns; skipping',
+                    num, opts["<input-file>"]
+                )
+                continue
             cols.append(sim(cols[0], cols[1]))
-            print(*cols, sep='\t')
+            print(*cols, sep='\t', file=outputfile)
 
 
 if __name__ == '__main__':
