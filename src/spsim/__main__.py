@@ -2,6 +2,8 @@
 Usage: spsim [options] <examples-file> [<input-file> [<output-file>]]
 
 Options
+    --trace <fname>
+               Save learned differences into specified file.
     --phrases  Assume that input contains phrases instead of words.
     --case     Be case sensitive.
     --accents  Be sensitive to accents.
@@ -12,7 +14,6 @@ Options
 """
 
 import logging
-import sys
 import docopt
 import openfile
 from spsim import PhraseSpSim, SpSim
@@ -29,7 +30,7 @@ def read_examples(fname):
                 yield columns[:2]
 
 
-def main(argv=sys.argv):
+def main():
     logging.basicConfig()
     opts = docopt.docopt(__doc__)
     cls = PhraseSpSim if opts["--phrases"] else SpSim
@@ -39,7 +40,28 @@ def main(argv=sys.argv):
         group_vowels=opts["--vowels"],
     )
     examples = read_examples(opts["<examples-file>"])
-    sim.learn(examples)
+    if opts["--trace"]:
+        with (openfile.openfile(opts["--trace"], "wt")) as out:
+            def trace(a, b, diff, before, after):
+                diffa, diffb = diff.split("\t")
+                after_repr = "%s[%s]%s <=> %s[%s]%s" % (
+                    after[0], diffa, after[1],
+                    after[0], diffb, after[1],
+                )
+                if before and before != after:
+                    before_repr = "%s[%s]%s <=> %s[%s]%s" % (
+                        before[0], diffa, before[1],
+                        before[0], diffb, before[1],
+                    )
+                    out.write("%s<=>%s => %s => %s\n" % (
+                        a, b, before_repr, after_repr
+                    ))
+                else:
+                    out.write("%s<=>%s => %s\n" % (a, b, after_repr))
+
+            sim.learn(examples, trace_fn=trace)
+    else:
+        sim.learn(examples)
     inputfile = openfile.openfile(opts["<input-file>"])
     outputfile = openfile.openfile(opts["<output-file>"], "wt")
     debug = opts["--debug"]
