@@ -46,6 +46,7 @@ class SpSim:
                  group_vowels=False):
         self.ignore_case = ignore_case
         self.ignore_accents = ignore_accents
+        self.group_vowels = group_vowels
         self.diffs = {}
         if examples:
             self.learn(examples)
@@ -53,7 +54,7 @@ class SpSim:
     def __call__(self, a, b, known=None, unknown=None):
         a, b = self._prepare(a, b)
         dist = 0  # total distance
-        for nchars, diff, ctxt in SpSim._get_diffs(a, b):
+        for nchars, diff, ctxt in self._get_diffs(a, b):
             if not SpSim._match_context(ctxt, self.diffs.get(diff, None)):
                 dist += nchars
                 if unknown is not None:
@@ -62,12 +63,15 @@ class SpSim:
                 known.append((diff, ctxt))
         return 1.0 - dist / max(1, len(a), len(b))
 
-    def learn(self, examples):
+    def learn(self, examples, trace_fn=None):
         for a, b in examples:
             a, b = self._prepare(a, b)
-            for n, diff, ctxt in SpSim._get_diffs(a, b):
-                learned = self.diffs.get(diff, None)
-                self.diffs[diff] = SpSim._generalize_context(learned, ctxt)
+            for _, diff, ctxt in self._get_diffs(a, b):
+                before = self.diffs.get(diff, None)
+                after = SpSim._generalize_context(before, ctxt)
+                self.diffs[diff] = after
+                if trace_fn is not None:
+                    trace_fn(a, b, diff, before, after)
 
     def _prepare(self, a, b):
         if self.ignore_case:
@@ -76,8 +80,7 @@ class SpSim:
             a, b = remove_accents(a), remove_accents(b)
         return a, b
 
-    @staticmethod
-    def _get_diffs(a, b):
+    def _get_diffs(self, a, b):
         alignment = align("^" + a + "$", "^" + b + "$", gap=" ")
         for mma, mmb in mismatches(*alignment, context=1):
             nchars = len(mma) - 2  # discount the left and right context chars
@@ -85,12 +88,11 @@ class SpSim:
             diffb = mmb[1:-1].replace(" ", "")
             ctxtl = mma[0]
             ctxtr = mma[-1]
-            ctxtl = SpSim._get_context_repr(ctxtl)
-            ctxtr = SpSim._get_context_repr(ctxtr)
+            ctxtl = self._get_context_repr(ctxtl)
+            ctxtr = self._get_context_repr(ctxtr)
             yield nchars, diffa + "\t" + diffb, ctxtl + ctxtr
 
-    @staticmethod
-    def _get_context_repr(char):
+    def _get_context_repr(self, char):
         # TODO: add vowels for other alphabets
         if self.group_vowels and char in "aeiou":
             return "a"  # vowel representative
@@ -108,7 +110,6 @@ class SpSim:
     def _generalize_context(learned, ctxt):
         if not learned:
             return ctxt
-        else:
-            lft = "*" if learned[0] != ctxt[0] else learned[0]
-            rgt = "*" if learned[1] != ctxt[1] else learned[1]
-            return lft + rgt
+        lft = "*" if learned[0] != ctxt[0] else learned[0]
+        rgt = "*" if learned[1] != ctxt[1] else learned[1]
+        return lft + rgt
