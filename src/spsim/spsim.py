@@ -49,12 +49,16 @@ class SpSim:
         if examples:
             self.learn(examples)
 
-    def __call__(self, a, b):
+    def __call__(self, a, b, known=None, unknown=None):
         a, b = self._prepare(a, b)
         dist = 0  # total distance
         for nchars, diff, ctxt in SpSim._get_diffs(a, b):
             if not SpSim._match_context(ctxt, self.diffs.get(diff, None)):
                 dist += nchars
+                if unknown is not None:
+                    unknown.append((diff, ctxt))
+            elif known is not None:
+                known.append((diff, ctxt))
         return 1.0 - dist / max(1, len(a), len(b))
 
     def learn(self, examples):
