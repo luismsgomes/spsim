@@ -38,11 +38,12 @@ class PhraseSpSim(SpSim):
     1.0
 
     '''
-    def __init__(self, examples=None):
-        super().__init__(examples=examples)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._dist_cache = {}
 
-    def __call__(self, a, b):
+    def __call__(self, a, b, known=None, unknown=None):
+        # TODO: update known and unknown lists, when given
         if isinstance(a, str):
             a, b = a.split(), b.split()
         # compute the length of the longest phrase (excluding spaces)
