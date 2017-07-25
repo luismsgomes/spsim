@@ -20,6 +20,14 @@ from spsim import PhraseSpSim, SpSim
 LOGGER = logging.getLogger("spsim")
 
 
+def read_examples(fname):
+    with (openfile.openfile(fname)) as lines:
+        for line in lines:
+            columns = line.rstrip("\n").split("\t")
+            if len(columns) >= 2:
+                yield columns[:2]
+
+
 def main(argv=sys.argv):
     logging.basicConfig()
     opts = docopt.docopt(__doc__)
@@ -28,10 +36,8 @@ def main(argv=sys.argv):
         ignore_case=not opts["--case"],
         ignore_accents=not opts["--accents"],
     )
-    with (openfile.openfile(opts["<examples-file>"])) as lines:
-        sim.learn(
-            line.rstrip("\n").split("\t")[:2] for line in lines if "\t" in line
-        )
+    examples = read_examples(opts["<examples-file>"])
+    sim.learn(examples)
     inputfile = openfile.openfile(opts["<input-file>"])
     outputfile = openfile.openfile(opts["<output-file>"], "wt")
     debug = opts["--debug"]
