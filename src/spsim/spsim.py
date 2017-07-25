@@ -42,7 +42,8 @@ class SpSim:
     def __init__(self,
                  examples=None,
                  ignore_case=True,
-                 ignore_accents=True):
+                 ignore_accents=True,
+                 group_vowels=False):
         self.ignore_case = ignore_case
         self.ignore_accents = ignore_accents
         self.diffs = {}
@@ -84,7 +85,16 @@ class SpSim:
             diffb = mmb[1:-1].replace(" ", "")
             ctxtl = mma[0]
             ctxtr = mma[-1]
+            ctxtl = SpSim._get_context_repr(ctxtl)
+            ctxtr = SpSim._get_context_repr(ctxtr)
             yield nchars, diffa + "\t" + diffb, ctxtl + ctxtr
+
+    @staticmethod
+    def _get_context_repr(char):
+        # TODO: add vowels for other alphabets
+        if self.group_vowels and char in "aeiou":
+            return "a"  # vowel representative
+        return char
 
     @staticmethod
     def _match_context(ctxt, learned):

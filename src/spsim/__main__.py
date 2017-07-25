@@ -8,6 +8,7 @@ Options
     --debug    Output two additional columns with known and unknown
                differences found on each word pair.
                Warning: this option will not work correctly with --phrases.
+    --vowels   Group vowels.
 """
 
 import logging
@@ -35,6 +36,7 @@ def main(argv=sys.argv):
     sim = cls(
         ignore_case=not opts["--case"],
         ignore_accents=not opts["--accents"],
+        group_vowels=opts["--vowels"],
     )
     examples = read_examples(opts["<examples-file>"])
     sim.learn(examples)
