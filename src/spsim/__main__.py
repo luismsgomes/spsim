@@ -3,14 +3,15 @@ Usage: spsim [options] <examples-file> [<input-file> [<output-file>]]
 
 Options
     --trace <fname>
-               Save learned differences into specified file.
-    --phrases  Assume that input contains phrases instead of words.
-    --case     Be case sensitive.
-    --accents  Be sensitive to accents.
-    --debug    Output two additional columns with known and unknown
-               differences found on each word pair.
-               Warning: this option will not work correctly with --phrases.
-    --vowels   Group vowels.
+                Save learned differences into specified file.
+    --phrases   Assume that input contains phrases instead of words.
+    --case      Be case sensitive.
+    --accents   Be sensitive to accents.
+    --debug     Output two additional columns with known and unknown
+                differences found on each word pair.
+                Warning: this option will not work correctly with --phrases.
+    --vowels    Group vowels.
+    --no-empty  Ensure differences are not empty on any side.
 """
 
 import logging
@@ -38,6 +39,7 @@ def main():
         ignore_case=not opts["--case"],
         ignore_accents=not opts["--accents"],
         group_vowels=opts["--vowels"],
+        non_empty_diffs=opts["--no-empty"],
     )
     examples = read_examples(opts["<examples-file>"])
     if opts["--trace"]:

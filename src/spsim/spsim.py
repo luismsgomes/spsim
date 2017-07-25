@@ -43,10 +43,12 @@ class SpSim:
                  examples=None,
                  ignore_case=True,
                  ignore_accents=True,
-                 group_vowels=False):
+                 group_vowels=False,
+                 no_empty=False):
         self.ignore_case = ignore_case
         self.ignore_accents = ignore_accents
         self.group_vowels = group_vowels
+        self.no_empty = no_empty
         self.diffs = {}
         if examples:
             self.learn(examples)
@@ -81,13 +83,27 @@ class SpSim:
         return a, b
 
     def _get_diffs(self, a, b):
-        alignment = align("^" + a + "$", "^" + b + "$", gap=" ")
-        for mma, mmb in mismatches(*alignment, context=1):
-            nchars = len(mma) - 2  # discount the left and right context chars
-            diffa = mma[1:-1].replace(" ", "")
-            diffb = mmb[1:-1].replace(" ", "")
-            ctxtl = mma[0]
-            ctxtr = mma[-1]
+        alignment = align(" ^" + a + "$ ", " ^" + b + "$ ", gap=" ")
+        for mma, mmb in mismatches(*alignment, context=2):
+            nchars = len(mma) - 4  # discount the left and right context chars
+            diffa = mma[2:-2].replace(" ", "")
+            diffb = mmb[2:-2].replace(" ", "")
+            ctxtl = mma[1]
+            ctxtr = mma[-2]
+            if self.no_empty and (not diffa or not diffb):
+                if diffa.startswith(ctxtl) or diffb.startswith(ctxtl):
+                    diffa = mma[1:-2].replace(" ", "")
+                    diffb = mmb[1:-2].replace(" ", "")
+                    ctxtl = mma[0]
+                elif diffa.endswith(ctxtr) or diffb.endswith(ctxtr):
+                    diffa = mma[2:-1].replace(" ", "")
+                    diffb = mmb[2:-1].replace(" ", "")
+                    ctxtr = mma[-1]
+                else:
+                    diffa = mma[1:-1].replace(" ", "")
+                    diffb = mmb[1:-1].replace(" ", "")
+                    ctxtl = mma[0]
+                    ctxtr = mma[-1]
             ctxtl = self._get_context_repr(ctxtl)
             ctxtr = self._get_context_repr(ctxtr)
             yield nchars, diffa + "\t" + diffb, ctxtl + ctxtr
