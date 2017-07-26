@@ -23,10 +23,11 @@ Example command line usage::
 
     $ # If we don't give any example cognates, SpSim will be equivalent to
     $ #             1 - edit_distance / max_len_of_strings
+    $ # Note that by default spsim matches accentuated characters, i.e. a == á
     $ echo "" > empty.txt
     $ spsim empty.txt maybe_enpt.txt
-    pharmacy    farmácia    0.375
-    arithmetic  aritmética  0.7
+    pharmacy    farmácia    0.5
+    arithmetic  aritmética  0.8
 
     $ now let's get some example cognates:
     $ wget http://research.variancia.com/spsim/examples_enpt.txt

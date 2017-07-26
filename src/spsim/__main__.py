@@ -39,7 +39,7 @@ def main():
         ignore_case=not opts["--case"],
         ignore_accents=not opts["--accents"],
         group_vowels=opts["--vowels"],
-        non_empty_diffs=opts["--no-empty"],
+        no_empty=opts["--no-empty"],
     )
     examples = read_examples(opts["<examples-file>"])
     if opts["--trace"]:
