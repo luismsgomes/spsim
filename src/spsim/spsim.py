@@ -54,6 +54,10 @@ class SpSim:
             self.learn(examples)
 
     def __call__(self, a, b, known=None, unknown=None):
+        dist = self._dist(a, b, known=known, unknown=unknown)
+        return 1.0 - dist / max(1, len(a), len(b))
+
+    def _dist(self, a, b, known=None, unknown=None):
         a, b = self._prepare(a, b)
         dist = 0  # total distance
         for nchars, diff, ctxt in self._get_diffs(a, b):
@@ -63,7 +67,7 @@ class SpSim:
                     unknown.append((diff, ctxt))
             elif known is not None:
                 known.append((diff, ctxt))
-        return 1.0 - dist / max(1, len(a), len(b))
+        return dist
 
     def learn(self, examples, trace_fn=None):
         for a, b in examples:
